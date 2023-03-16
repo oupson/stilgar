@@ -3,6 +3,7 @@ use std::{
     path::PathBuf,
 };
 
+use anyhow::Context;
 use axum::{
     extract::{ws::WebSocket, State, WebSocketUpgrade},
     response::IntoResponse,
@@ -49,6 +50,11 @@ async fn listen_temp(state: AppState) -> anyhow::Result<()> {
 async fn main() -> anyhow::Result<()> {
     dotenvy::dotenv().ok();
     tracing_subscriber::fmt::init();
+
+    let db_pool = database::open_connection(
+        &std::env::var("DATABASE_URL").context("Failed to get DATABASE_URL")?,
+    )
+    .await?;
 
     let state = AppState::new_state();
 
