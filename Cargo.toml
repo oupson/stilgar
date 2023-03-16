@@ -1,0 +1,19 @@
+[package]
+name = "stilgar"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+anyhow = "1.0"
+axum = { version = "0.6", features = ["ws", "headers"] }
+dotenvy = "0.15"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+sqlx = { version = "0.6", features = ["runtime-tokio-native-tls", "postgres"] }
+thiserror = "1.0"
+tokio = { version = "1.26", features = ["full"] }
+tower-http = { version = "0.4", features = ["fs"] }
+tracing = "0.1"
+tracing-subscriber = "0.3"
