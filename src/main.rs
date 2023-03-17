@@ -20,6 +20,8 @@ pub(crate) mod database;
 pub(crate) mod message;
 pub(crate) mod state;
 
+mod api;
+
 async fn listen_temp(state: AppState) -> anyhow::Result<()> {
     let socket = UdpSocket::bind("0.0.0.0:55555").await?;
 
@@ -69,6 +71,7 @@ async fn main() -> anyhow::Result<()> {
     let app = Router::new()
         .fallback_service(ServeDir::new(assets_dir).append_index_html_on_directories(true))
         .route("/ws", get(ws_handler))
+        .nest("/api", api::router())
         .with_state(state);
 
     let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
