@@ -1,12 +1,41 @@
-use std::num::ParseFloatError;
+use std::{borrow::Cow, num::ParseFloatError};
 
-use serde::Serialize;
+use serde::{ser::SerializeStruct, Serialize, Serializer};
+use sqlx::types::mac_address::MacAddress;
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone)]
 pub(crate) struct Message {
-    mac: String,
+    mac: MacAddress,
     temperature: f32,
     humidity: f32,
+}
+
+impl Serialize for Message {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("Message", 3)?;
+        state.serialize_field("mac", &self.mac.to_string())?;
+        state.serialize_field("temperature", &self.temperature)?;
+        state.serialize_field("humidity", &self.humidity)?;
+
+        state.end()
+    }
+}
+
+impl Message {
+    pub(crate) fn mac(&self) -> &MacAddress {
+        &self.mac
+    }
+
+    pub(crate) fn temperature(&self) -> f32 {
+        self.temperature
+    }
+
+    pub(crate) fn humidity(&self) -> f32 {
+        self.humidity
+    }
 }
 
 impl TryFrom<&[u8]> for Message {
@@ -21,7 +50,8 @@ impl TryFrom<&[u8]> for Message {
             mac: splitted
                 .next()
                 .ok_or_else(|| ParseError::MissingField(0))?
-                .to_owned(),
+                .try_into()
+                .map_err(|_| ParseError::MacParseError())?,
             temperature: splitted
                 .next()
                 .ok_or_else(|| ParseError::MissingField(1))?
@@ -42,4 +72,6 @@ pub(crate) enum ParseError {
     MissingField(usize),
     #[error(transparent)]
     NumberParseError(#[from] ParseFloatError),
+    #[error("failed to parse mac adresse")]
+    MacParseError(),
 }

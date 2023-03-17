@@ -35,6 +35,7 @@ async fn listen_temp(state: AppState) -> anyhow::Result<()> {
 
         match Message::try_from(&buf[0..size]) {
             Ok(msg) => {
+                database::insert_record(state.pool(), &msg).await?;
                 if let Err(e) = state.tx().send(msg) {
                     tracing::warn!("Failed to send to websocket : {}", e);
                 }
@@ -56,7 +57,7 @@ async fn main() -> anyhow::Result<()> {
     )
     .await?;
 
-    let state = AppState::new_state();
+    let state = AppState::new_state(db_pool);
 
     let s = state.clone();
     tokio::spawn(async {
