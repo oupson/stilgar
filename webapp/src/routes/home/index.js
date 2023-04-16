@@ -1,41 +1,52 @@
-import { h } from 'preact';
+import { Component, h } from 'preact';
 import style from './style.css';
 
-const Home = () => {
-	return (
-		<div class={style.home}>
-			<a href="https://preactjs.com">
-				<img src="../../assets/preact-logo.svg" alt="Preact Logo" height="160" width="160" />
-			</a>
-			<h1>Get Started Building PWAs with Preact-CLI</h1>
-			<section>
-				<Resource
-					title="Learn Preact"
-					description="If you're new to Preact, try the interactive tutorial to learn important concepts"
-					link="https://preactjs.com/tutorial/"
-				/>
-				<Resource
-					title="Differences to React"
-					description="If you're coming from React, check out our docs for where Preact differs"
-					link="https://preactjs.com/guide/v10/differences-to-react"
-				/>
-				<Resource
-					title="Learn Preact-CLI"
-					description="To learn more about Preact-CLI, read through the ReadMe & Wiki"
-					link="https://github.com/preactjs/preact-cli#preact-cli--"
-				/>
-			</section>
-		</div>
-	);
-};
+class Home extends Component {
+	state = { states: {} };
 
-const Resource = props => {
-	return (
-		<a href={props.link} class={style.resource}>
-			<h2>{props.title}</h2>
-			<p>{props.description}</p>
-		</a>
-	);
-};
+	constructor() {
+		super();
+
+		this.setState({ states: {} });
+
+		const socket = new WebSocket('ws://localhost:3000/api/ws');
+		socket.addEventListener('open', function (event) {
+			socket.send('Hello Server!');
+		});
+
+		socket.addEventListener('message', this.onSocketMessage.bind(this));
+
+	}
+
+	onSocketMessage(event) {
+		const msg = JSON.parse(event.data);
+		this.state.states[msg.mac] = msg;
+		this.setState(this.state);
+	}
+
+	componentDidMount() {
+		console.debug("componentDidMount");
+	}
+
+	componentWillUnmount() {
+		console.debug("componentWillUnmount");
+	}
+
+	render(props, state) {
+		return (
+			<article class="app">
+				<h1>Sensors</h1>
+				<ul>
+					{
+						Object.values(state.states).map(msg => (
+							<li key={msg}>{msg.mac} : {msg.temperature}</li>
+						))
+					}
+				</ul>
+			</article>
+		);
+	}
+}
+
 
 export default Home;

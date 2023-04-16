@@ -1,4 +1,4 @@
-use std::{borrow::Cow, num::ParseFloatError};
+use std::num::ParseFloatError;
 
 use serde::{ser::SerializeStruct, Serialize, Serializer};
 use sqlx::types::mac_address::MacAddress;

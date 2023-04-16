@@ -5,9 +5,6 @@ use std::{
 
 use anyhow::Context;
 use axum::{
-    extract::{ws::WebSocket, State, WebSocketUpgrade},
-    response::IntoResponse,
-    routing::get,
     Router,
 };
 use state::AppState;
@@ -70,7 +67,6 @@ async fn main() -> anyhow::Result<()> {
 
     let app = Router::new()
         .fallback_service(ServeDir::new(assets_dir).fallback(ServeFile::new("index.html")))
-        .route("/ws", get(ws_handler))
         .nest("/api", api::router())
         .with_state(state);
 
@@ -82,20 +78,4 @@ async fn main() -> anyhow::Result<()> {
         .await?;
 
     Ok(())
-}
-
-async fn ws_handler(State(state): State<AppState>, ws: WebSocketUpgrade) -> impl IntoResponse {
-    ws.on_upgrade(move |socket| handle_socket(socket, state))
-}
-
-async fn handle_socket(mut socket: WebSocket, state: AppState) {
-    let mut rx = state.tx().subscribe();
-
-    loop {
-        let msg = rx.recv().await.unwrap();
-        socket
-            .send(serde_json::to_string(&msg).unwrap().into())
-            .await
-            .unwrap();
-    }
 }
