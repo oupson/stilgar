@@ -1,4 +1,4 @@
-import { Component, h } from 'preact';
+import { Component } from 'preact';
 import style from './style.css';
 
 class Home extends Component {
@@ -9,7 +9,7 @@ class Home extends Component {
 
 		this.setState({ states: {} });
 
-		const socket = new WebSocket('ws://localhost:3000/api/ws');
+		const socket = new WebSocket(location.origin.replace(/^http/, 'ws') + '/api/ws');
 		socket.addEventListener('open', function (event) {
 			socket.send('Hello Server!');
 		});
@@ -32,7 +32,7 @@ class Home extends Component {
 		console.debug("componentWillUnmount");
 	}
 
-	render(props, state) {
+	render(_, state) {
 		return (
 			<article class="app">
 				<h1>Sensors</h1>

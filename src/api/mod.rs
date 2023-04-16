@@ -1,4 +1,9 @@
-use axum::{Router, routing::get, extract::{State, WebSocketUpgrade, ws::WebSocket}, response::IntoResponse};
+use axum::{
+    extract::{ws::WebSocket, State, WebSocketUpgrade},
+    response::IntoResponse,
+    routing::get,
+    Router,
+};
 
 use crate::state::AppState;
 
@@ -9,12 +14,10 @@ mod sensor;
 
 pub(crate) fn router() -> Router<AppState> {
     Router::new()
-    .route("/ws", get(ws_handler))
+        .route("/ws", get(ws_handler))
         .nest("/sensor", sensor::router())
         .nest("/room", room::router())
 }
-
-
 
 async fn ws_handler(State(state): State<AppState>, ws: WebSocketUpgrade) -> impl IntoResponse {
     ws.on_upgrade(move |socket| handle_socket(socket, state))
