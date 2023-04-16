@@ -12,6 +12,8 @@
 <body>
     <script type="module">
         import { h, Component, render } from 'https://esm.sh/preact';
+        import AsyncRoute from 'preact-async-route';
+
         import htm from 'https://esm.sh/htm';
 
 
@@ -62,7 +64,9 @@
             }
         }
 
-        render(html`<${App} />`, document.body);
+        render(html`<Router>
+  <${App} path="/" />
+</Router>`, document.body);
     </script>
 </body>
 

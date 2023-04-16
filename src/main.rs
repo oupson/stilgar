@@ -12,7 +12,7 @@ use axum::{
 };
 use state::AppState;
 use tokio::net::UdpSocket;
-use tower_http::services::ServeDir;
+use tower_http::services::{ServeDir, ServeFile};
 
 use crate::{message::Message, state::AppStateExt};
 
@@ -69,12 +69,12 @@ async fn main() -> anyhow::Result<()> {
     let assets_dir = PathBuf::from("assets");
 
     let app = Router::new()
-        .fallback_service(ServeDir::new(assets_dir).append_index_html_on_directories(true))
+        .fallback_service(ServeDir::new(assets_dir).fallback(ServeFile::new("index.html")))
         .route("/ws", get(ws_handler))
         .nest("/api", api::router())
         .with_state(state);
 
-    let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
+    let addr = SocketAddr::from(([127, 0, 0, 1], 3001));
     tracing::debug!("listening on {}", addr);
 
     axum::Server::bind(&addr)
